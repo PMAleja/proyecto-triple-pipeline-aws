@@ -17,9 +17,9 @@ Infraestructura (Terraform) → Código y Versionado (Docker + ECR) → Desplieg
 - En lugar de llaves estáticas IAM (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`), los pipelines autentican contra AWS mediante **federación OIDC de GitHub Actions** (`role-to-assume`), obteniendo credenciales temporales por ejecución y con permisos de mínimo privilegio limitados al repositorio y a la Región `us-east-2`.
 - El estado remoto de Terraform se guarda en S3 (`devops-final-tfstate-<PROJECT_ID>`) con acceso público bloqueado y versionado habilitado.
 
-## Secretos configurados (Settings → Secrets and variables → Actions)
-- `AWS_ROLE_ARN`: ARN del rol IAM de OIDC (`devops-final-github-actions-role`)
-- `AWS_REGION`: `us-east-2`
+## Secretos y Variables configurados (Settings → Secrets and variables → Actions)
+- **Secret** `AWS_ROLE_ARN`: ARN del rol IAM de OIDC (`devops-final-github-actions-role`)
+- **Variable** `AWS_REGION`: `us-east-2` (se usa como Variable y no como Secret para que GitHub Actions no bloquee outputs entre jobs que incluyan la región en los ARNs de ECS)
 
 ## Entornos de aprobación (Settings → Environments)
 - `produccion-infra` y `produccion-deploy`, ambos protegidos con *Required reviewers*.

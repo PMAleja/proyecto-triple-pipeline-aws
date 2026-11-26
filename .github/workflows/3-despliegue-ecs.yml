@@ -27,13 +27,13 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: 1-2. Seleccionar Imagen ECR y Registrar Nueva Task Definition
         id: reg-td
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          REGION=${{ secrets.AWS_REGION }}
+          REGION=${{ vars.AWS_REGION }}
           if [ "${{ github.event_name }}" = "workflow_run" ]; then
             TAG=$(echo "${{ github.event.workflow_run.head_sha }}" | cut -c1-7)
           else
@@ -79,7 +79,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: 5. Deploy Produccion en Amazon ECS
         run: |

@@ -21,7 +21,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - uses: hashicorp/setup-terraform@v3
 
@@ -31,5 +31,5 @@ jobs:
           terraform init -reconfigure \
             -backend-config="bucket=devops-final-tfstate-${ACCOUNT_ID}" \
             -backend-config="key=triple-pipeline/terraform.tfstate" \
-            -backend-config="region=${{ secrets.AWS_REGION }}"
-          terraform destroy -var="aws_region=${{ secrets.AWS_REGION }}" -auto-approve
+            -backend-config="region=${{ vars.AWS_REGION }}"
+          terraform destroy -var="aws_region=${{ vars.AWS_REGION }}" -auto-approve
