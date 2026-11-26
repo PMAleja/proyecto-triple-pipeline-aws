@@ -44,7 +44,7 @@ jobs:
           REGISTRY="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
 
           BACK_DEF=$(jq -nc --arg img "$REGISTRY/devops-final-backend:$TAG" --arg tag "$TAG" --arg region "$REGION" \
-            '[{name:"backend",image:$img,essential:true,portMappings:[{containerPort:3000,hostPort:3000}],environment:[{name:"APP_VERSION",value:$tag}],logConfiguration:{logDriver:"awslogs",options:{"awslogs-group":"/ecs/devops-final-backend","awslogs-region":$region,"awslogs-stream-prefix":"backend"}}}]')
+            '[{name:"backend",image:$img,essential:true,portMappings:[{containerPort:3000,hostPort:3000},{containerPort:80,hostPort:80}],environment:[{name:"APP_VERSION",value:$tag}],logConfiguration:{logDriver:"awslogs",options:{"awslogs-group":"/ecs/devops-final-backend","awslogs-region":$region,"awslogs-stream-prefix":"backend"}}}]')
           FRONT_DEF=$(jq -nc --arg img "$REGISTRY/devops-final-frontend:$TAG" --arg region "$REGION" \
             '[{name:"frontend",image:$img,essential:true,portMappings:[{containerPort:80,hostPort:80}],logConfiguration:{logDriver:"awslogs",options:{"awslogs-group":"/ecs/devops-final-frontend","awslogs-region":$region,"awslogs-stream-prefix":"frontend"}}}]')
 
@@ -100,12 +100,16 @@ jobs:
           FRONT_IP=$(get_ip devops-final-frontend-svc)
 
           echo "=========================================="
-          echo "FRONTEND URL: http://${FRONT_IP}"
-          echo "BACKEND API:  http://${BACK_IP}:3000"
+          echo "FRONTEND URL:            http://${FRONT_IP}"
+          echo "BACKEND API (puerto 80): http://${BACK_IP}"
+          echo "BACKEND API (puerto 3000): http://${BACK_IP}:3000"
           echo "=========================================="
+          curl -sf --retry 5 --retry-delay 5 --retry-all-errors http://${BACK_IP}/api/health
+          echo
           curl -sf --retry 5 --retry-delay 5 --retry-all-errors http://${BACK_IP}:3000/api/health
           echo
           curl -sI -f --retry 5 --retry-delay 5 --retry-all-errors http://${FRONT_IP}
           echo "Monitoreo OK: ambos servicios responden HTTP 200" >> $GITHUB_STEP_SUMMARY
           echo "- Frontend: http://${FRONT_IP}" >> $GITHUB_STEP_SUMMARY
-          echo "- Backend: http://${BACK_IP}:3000/api/health" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend (puerto 80): http://${BACK_IP}/api/health" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend (puerto 3000): http://${BACK_IP}:3000/api/health" >> $GITHUB_STEP_SUMMARY

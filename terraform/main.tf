@@ -136,7 +136,10 @@ resource "aws_ecs_task_definition" "backend" {
     name         = "backend"
     image        = "${aws_ecr_repository.backend.repository_url}:latest"
     essential    = true
-    portMappings = [{ containerPort = 3000, hostPort = 3000 }]
+    portMappings = [
+      { containerPort = 3000, hostPort = 3000 },
+      { containerPort = 80, hostPort = 80 }
+    ]
     logConfiguration = {
       logDriver = "awslogs"
       options = {

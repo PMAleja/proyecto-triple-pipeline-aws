@@ -16,22 +16,43 @@
 <body>
   <div class="card">
     <h1>Triple Pipeline DevOps en AWS ECS</h1>
-    <p>Ingresa la IP pública de la tarea Backend en ECS (ej. http://54.12.34.56:3000):</p>
-    <input id="url" type="text" placeholder="http://IP_BACKEND:3000">
+    <p>Ingresa la IP pública de la tarea Backend en ECS (ej. http://54.12.34.56 o http://54.12.34.56:3000):</p>
+    <input id="url" type="text" placeholder="http://IP_BACKEND (puerto 80 o :3000)">
     <button onclick="consultar()">Consultar Backend</button>
     <pre id="salida">Esperando consulta...</pre>
   </div>
   <script>
     async function consultar() {
-      const base = document.getElementById('url').value.trim().replace(/\/$/, '');
+      let base = document.getElementById('url').value.trim().replace(/\/$/, '');
       const salida = document.getElementById('salida');
-      salida.textContent = 'Consultando...';
+      if (!base) {
+        salida.textContent = 'Por favor ingresa la IP o URL del Backend.';
+        return;
+      }
+      if (!/^https?:\/\//i.test(base)) {
+        base = 'http://' + base;
+      }
+      salida.textContent = 'Consultando ' + base + ' ...';
       try {
         const health = await (await fetch(base + '/api/health')).json();
         const tareas = await (await fetch(base + '/api/tareas')).json();
-        salida.textContent = JSON.stringify({ health, tareas }, null, 2);
+        salida.textContent = JSON.stringify({ url_usada: base, health, tareas }, null, 2);
       } catch (e) {
-        salida.textContent = 'Error al conectar con el backend: ' + e.message;
+        if (base.endsWith(':3000')) {
+          const fallback = base.replace(/:3000$/, '');
+          try {
+            const health = await (await fetch(fallback + '/api/health')).json();
+            const tareas = await (await fetch(fallback + '/api/tareas')).json();
+            salida.textContent = JSON.stringify({
+              nota: 'Puerto 3000 bloqueado por tu red; conectado automaticamente por puerto estandar 80',
+              url_usada: fallback,
+              health,
+              tareas
+            }, null, 2);
+            return;
+          } catch (_) {}
+        }
+        salida.textContent = 'Error al conectar con el backend (' + base + '): ' + e.message;
       }
     }
   </script>

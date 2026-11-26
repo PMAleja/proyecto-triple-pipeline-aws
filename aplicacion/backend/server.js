@@ -21,6 +21,8 @@ app.get('/api/tareas', (req, res) => {
 });
 
 if (require.main === module) {
-  app.listen(3000, '0.0.0.0', () => console.log('API escuchando en puerto 3000'));
+  [3000, 80].forEach((port) => {
+    app.listen(port, '0.0.0.0', () => console.log(`API escuchando en puerto ${port}`));
+  });
 }
 module.exports = app;
